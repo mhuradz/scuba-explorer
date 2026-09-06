@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.codebase-memory/
+
+# Local modeling/source files are not used by the web build.
+SW3dPS-MERGULHADOR ESCALADO/
+public/assets/diver/Animate3D.exe
+
+# Local tooling and OS noise.
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+Thumbs.db
