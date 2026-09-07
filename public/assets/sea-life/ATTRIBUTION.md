@@ -7,3 +7,9 @@
 
 The model is used as a distant ambient manta ray in the Open Ocean scene. The
 local preview image is kept beside the model for asset tracking only.
+
+- Asset: Whale 3D Model (`whale.glb`)
+- Source: User-provided project asset
+- Imported format: GLB Khronos format
+
+The whale is used as deep-sea ambient life from Level 3 onward.

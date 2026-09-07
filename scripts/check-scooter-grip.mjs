@@ -1,0 +1,32 @@
+import fs from 'node:fs';
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { createAnimatedDiver } from '../src/animated-diver.js';
+const bytes = fs.readFileSync('public/assets/diver/4f8b554364524095831b34b723f31682.glb');
+const len = bytes.readUInt32LE(12);
+const json = JSON.parse(bytes.toString('utf8',20,20+len));
+delete json.images; delete json.textures; delete json.materials;
+json.meshes.forEach(m=>m.primitives.forEach(p=>delete p.material));
+json.buffers[0].uri = 'data:application/octet-stream;base64,' + bytes.subarray(28+len).toString('base64');
+globalThis.ProgressEvent ??= class ProgressEvent {};
+const gltf = await new GLTFLoader().parseAsync(JSON.stringify(json),'');
+const scene = new THREE.Scene(), root = new THREE.Group(); scene.add(root);
+const animator = createAnimatedDiver(gltf,root);
+root.userData.scooterGrips = [new THREE.Vector3(1.53,-.51,-.34),new THREE.Vector3(1.53,-.51,.34)];
+for(let i=0;i<60;i++) animator.update(1/60,{horizontal:1});
+scene.updateMatrixWorld(true);
+for(const name of ['CATRigLArm1_022','CATRigRArm1_045','CATRigLArmPalm_025','CATRigRArmPalm_048']) {
+ const p = root.worldToLocal(root.getObjectByName(name).getWorldPosition(new THREE.Vector3()));
+ console.log(name,p.toArray());
+}
+const sb = fs.readFileSync('public/assets/equipment/sea-scooter.glb');
+const sl = sb.readUInt32LE(12), sj = JSON.parse(sb.toString('utf8',20,20+sl));
+delete sj.images; delete sj.textures;
+sj.materials?.forEach(m=>{console.log('material',m.name);});
+delete sj.materials; sj.meshes.forEach(m=>m.primitives.forEach(p=>delete p.material));
+sj.buffers[0].uri='data:application/octet-stream;base64,'+sb.subarray(28+sl).toString('base64');
+const sg = await new GLTFLoader().parseAsync(JSON.stringify(sj),'');
+const s = sg.scene, box=new THREE.Box3().setFromObject(s), sz=box.getSize(new THREE.Vector3());
+s.scale.setScalar(1.15/Math.max(sz.x,sz.y,sz.z));s.rotation.y=Math.PI/2;s.updateMatrixWorld(true);
+const center = new THREE.Box3().setFromObject(s).getCenter(new THREE.Vector3());s.position.sub(center);s.updateMatrixWorld(true);
+s.traverse(n=>{if(n.isMesh){const b=new THREE.Box3().setFromObject(n);console.log(n.name,b.min.toArray(),b.max.toArray());}});
