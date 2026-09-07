@@ -71,7 +71,7 @@ const maps = [
     id: 5, level: 'LEVEL 05', name: 'Abyssal Trench', depth: '45–90M', objective: 'Recover three abyss samples',
     goal: 'Cross the trench and reach the abyss beacon alive', finishLabel: 'ABYSS BEACON',
     finish: { x: 70, y: -32, z: 0 }, markerPositions: [[-8, -24], [24, -32], [52, -38]],
-    bounds: { min: -20, max: 74 }, difficulty: 'LEGENDARY', difficultyFactor: 1.78, reward: 1200, color: 'abyss', theme: 'abyssal-trench', requirement: 'Complete Kelp Labyrinth · Select Abyss swimmer', requiredTank: 'abyss_tank', requiredFins: 'efficient_fins'
+    bounds: { min: -20, max: 74 }, difficulty: 'LEGENDARY', difficultyFactor: 1.78, reward: 1200, color: 'abyss', theme: 'abyssal-trench', requirement: 'Complete Kelp Labyrinth · Equip abyss tank and efficient fins', requiredTank: 'abyss_tank', requiredFins: 'efficient_fins'
   }
 ];
 

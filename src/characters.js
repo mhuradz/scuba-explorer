@@ -1,11 +1,7 @@
 import * as THREE from 'three';
 import { createAnimatedDiver } from './animated-diver.js';
 export const characters = {
-  basic:{name:'Basic swimmer',url:'/assets/diver/4f8b554364524095831b34b723f31682.glb',price:0,capacity:100,maxDepthFeet:45,speedFactor:1,effortFactor:1,stage:2},
-  // Character 2 uses the supplied STL converted to a renderable GLB. STL has
-  // no skeleton, so the game applies restrained whole-body swim motion.
-  explorer:{name:'Scaled diver',url:'/assets/diver/character2-stl.glb?v=1',price:1200,capacity:200,maxDepthFeet:160,speedFactor:1.12,effortFactor:.85,stage:4},
-  abyss:{name:'Deepwater diver',url:'/assets/diver/model2.glb',price:3000,capacity:300,maxDepthFeet:300,speedFactor:1.2,effortFactor:.7,stage:5}
+  basic:{name:'Character 1 · Basic swimmer',url:'/assets/diver/4f8b554364524095831b34b723f31682.glb',price:0,capacity:100,maxDepthFeet:45,speedFactor:1,effortFactor:1,stage:2}
 };
 function addUnderwaterColor(model,id) {
   if(id!=='abyss')return;
@@ -51,8 +47,8 @@ export function animateCharacter(gltf,target,id) {
   pivot.scale.setScalar(3/maxDim);
   // The supplied characters are already authored in a swimming pose. Only
   // correct a clearly vertical asset; do not force a camera-dependent turn.
-  // radz.glb is exported upright. Character 2's locomotion space is a
-  // side-on underwater plane, so explicitly lay this diver on its stomach.
+  // The supplied diver is exported upright; lay it on its stomach for the
+  // side-on underwater plane.
   if(size.y>size.x*1.35 && size.y>size.z*1.35)pivot.rotation.z=-Math.PI/2;
   const authoredMixer=gltf.animations?.length?new THREE.AnimationMixer(model):null;
   if(authoredMixer)authoredMixer.clipAction(gltf.animations[0]).play();
@@ -78,12 +74,10 @@ export function animateCharacter(gltf,target,id) {
       if(!authoredMixer)node.quaternion.copy(rest).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),angle));
     });
     if(authoredMixer)authoredMixer.update(dt*(.8+Math.min(1.2,Math.max(0,strokeRate||.6))));
-    // Character 3 is a static, unrigged mesh. Give it a restrained kick/bob
-    // so it never reads as a frozen or dead card in the roster or preview.
+    // A static, unrigged mesh gets a restrained kick/bob so it never reads as
+    // frozen in the roster or preview.
     if(animatedMeshlessModel){
-      // Character 2 is a single authored mesh rather than a rigged clip. Use
-      // a continuous low-amplitude swim cycle so it still has a readable
-      // kick/breath rhythm instead of looking frozen in the water.
+      // A single authored mesh gets a continuous low-amplitude swim cycle.
       const effort=Math.min(1.35,Math.max(.55,Math.abs(horizontal)*.8+(strokeRate||.6)));
       const strokeTime=time*(2.6+effort*2.1);
       const kick=Math.sin(strokeTime)*.055;
