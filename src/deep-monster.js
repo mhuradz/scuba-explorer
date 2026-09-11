@@ -11,7 +11,10 @@ export function updateDeepMonster(game,dt,time,damage) {
       const body=new THREE.Group();body.add(root);game.scene.add(body);
       const mixer=new THREE.AnimationMixer(model);if(gltf.animations[0])mixer.clipAction(gltf.animations[0]).play();
       body.position.set(23,game.environment.heightAt(23,1)+3,1);
-      game.monster={body,mixer,cooldown:0,direction:-1,yaw:0};
+      // The game camera is a side-on 2D view. Keep the creature's model in
+      // profile and flip it horizontally instead of turning its face toward
+      // the camera like a free-roaming 3D character.
+      game.monster={body,mixer,cooldown:0,direction:-1,yaw:Math.PI};
     },undefined,error=>console.warn('Monster load failed',error));
   }
   const m=game.monster;if(!m)return;
@@ -20,8 +23,11 @@ export function updateDeepMonster(game,dt,time,damage) {
   if (m.attack) {
     m.attack.time += dt;
     const bite = m.attack.time > .38;
+    const attackDirection = Math.sign(p.x - m.body.position.x) || m.direction;
     m.body.position.x += (p.x - m.body.position.x - m.direction * 1.1) * Math.min(1, dt * 8);
     m.body.position.y += (p.y - m.body.position.y) * Math.min(1, dt * 8);
+    m.body.rotation.y = attackDirection > 0 ? 0 : Math.PI;
+    m.body.rotation.x = 0;
     m.body.rotation.z = Math.sin(m.attack.time * 18) * .08;
     m.body.scale.setScalar(1 + Math.sin(Math.min(1, m.attack.time / .8) * Math.PI) * .08);
     game.swimInput = { horizontal: 0, vertical: 0, attacked: true, distress: true, strokeRate: .04 };
@@ -36,8 +42,11 @@ export function updateDeepMonster(game,dt,time,damage) {
   const floor=game.environment.heightAt(m.body.position.x,1)+2.8;
   const targetY=Math.min(-7,Math.max(floor,chasing?p.y:floor+.4*Math.sin(time*.6)));
   m.body.position.y+=(targetY-m.body.position.y)*(1-Math.exp(-dt*2));
-  const yaw=direction>0?Math.PI/2:-Math.PI/2;
+  // Preserve the side-on silhouette: horizontal movement is represented by
+  // a flip, never by rotating the model toward the camera.
+  const yaw=direction>0?0:Math.PI;
   m.yaw+=Math.atan2(Math.sin(yaw-m.yaw),Math.cos(yaw-m.yaw))*(1-Math.exp(-dt*3));m.body.rotation.y=m.yaw;
+  m.body.rotation.x=0;
   m.mixer.update(dt*(chasing?1.5:.75));
   if(chasing&&dist<2.5&&m.cooldown===0){
     m.cooldown=2.4;

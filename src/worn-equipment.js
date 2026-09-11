@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 export function equipVisuals(target, loadout) {
   (target.userData.worn||[]).forEach(group=>{group.removeFromParent();group.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});});
-  const worn=[];target.userData.worn=worn;
+  const worn=[];target.userData.worn=worn;target.userData.stabilizeRightHand=!!loadout.light;
   const mat=color=>new THREE.MeshStandardMaterial({color,roughness:.5,metalness:.3});
   // Attach each item to the real skeleton anchor. This keeps the equipment
   // locked to the animated body instead of drifting in root/world space.

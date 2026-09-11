@@ -82,8 +82,9 @@ export function createAnimatedDiver(gltf, target) {
     if(weight<.01 || !collars.every(Boolean))return;
     target.updateMatrixWorld(true);
     const throat=collars[0].getWorldPosition(new THREE.Vector3()).add(collars[1].getWorldPosition(new THREE.Vector3())).multiplyScalar(.5);
-    for(const palm of palms) {
+    for(const [palmIndex,palm] of palms.entries()) {
       if(!palm)return;
+      if(palmIndex===1 && target.userData.stabilizeRightHand)continue;
       const joints=[];let joint=palm.parent;
       for(let i=0;i<4&&joint;i++,joint=joint.parent)if(joint.isBone)joints.push(joint);
       const originals=joints.map(b=>b.quaternion.clone());
@@ -139,11 +140,11 @@ export function createAnimatedDiver(gltf, target) {
       // Mixer evaluation above resets the bone pose each frame, avoiding drift.
       const struggle = Math.sin(distressTime * 4.7) * Math.sin(distressTime * 1.3);
       if (armL) { armL.rotation.z += distressBlend * (.6 + struggle * .12); armL.rotation.x += distressBlend * .25; }
-      if (armR) { armR.rotation.z -= distressBlend * (.55 - struggle * .1); armR.rotation.x -= distressBlend * .2; }
+      if (armR && !target.userData.stabilizeRightHand) { armR.rotation.z -= distressBlend * (.55 - struggle * .1); armR.rotation.x -= distressBlend * .2; }
       if(attacked) {
         const tremble=Math.sin(distressTime*22)*.035;
         if(armL){armL.rotation.x+=.55+tremble;armL.rotation.z+=.3;}
-        if(armR){armR.rotation.x-=.55-tremble;armR.rotation.z-=.3;}
+        if(armR&&!target.userData.stabilizeRightHand){armR.rotation.x-=.55-tremble;armR.rotation.z-=.3;}
       }
       target.rotation.set(pitch + distressBlend * (.12 + struggle * .04), yaw, roll + distressBlend * (.55 + Math.sin(distressTime * 1.7) * .06), 'YXZ');
       if(!attacked)holdThroat(distressBlend);
