@@ -628,7 +628,12 @@ function loop(now) {
   scene3d.lastHorizontal = horizontal || scene3d.lastHorizontal || 0; scene3d.turnPause = Math.max(0, (scene3d.turnPause || 0) - dt);
   if (movementResource() <= 8) state.sprintLocked = true;
   if (movementResource() >= 30) state.sprintLocked = false;
-  const tank = equipped('tank'), fins = equipped('fins'), scooter = equipped('scooter'), capacity = tank?.capacity || 0, finSpeed = (fins?.speedFactor ?? .58) * (scooter?.speedFactor ?? 1), finEffort = (fins?.effortFactor ?? 1.35) * (scooter?.effortFactor ?? 1);
+  const tank = equipped('tank'), fins = equipped('fins'), scooter = equipped('scooter'), capacity = tank?.capacity || 0;
+  // The scooter only contributes while it has charge. Once depleted, movement
+  // correctly falls back to ordinary fin swimming and effort consumption.
+  const scooterPowered = !!scooter && state.battery > 0;
+  const finSpeed = (fins?.speedFactor ?? .58) * (scooterPowered ? scooter.speedFactor : 1);
+  const finEffort = (fins?.effortFactor ?? 1.35) * (scooterPowered ? scooter.effortFactor : 1);
   const sprinting = !!state.keys.Shift && moving && !state.sprintLocked && state.oxygen > capacity * .15;
   const effort = (moving ? (sprinting ? 1 : .4) : .08) * finEffort * map.difficultyFactor;
   const energy = movementResource();
