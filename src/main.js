@@ -109,7 +109,11 @@ function activeCharacter(){return characters[save.characterId]||characters.basic
 let state = { screen: 'menu', modal: null, toast: '', running: false, paused: false, loading: false, loadingProgress: 100, mapId: 1, oxygen: 100, stamina: 100, battery: 100, fatigue: 0, health: 100, heart: 76, depth: 4, provisional: 0, markers: 0, time: 0, keys: {}, last: 0, sprintLocked: false, checkpoints: new Set(), result: null };
 function scooterActive() { return !!equipped('scooter'); }
 function movementResource() { return scooterActive() && state.battery > 0 ? state.battery : state.stamina; }
-function movementExhausted() { return scooterActive() ? state.battery <= 0 && state.stamina <= 15 : state.stamina <= 15; }
+function movementExhausted() {
+  // A dead scooter falls back to fin swimming. It must never freeze the diver;
+  // only an unequipped scooter can use the low-stamina exhaustion stop.
+  return !scooterActive() && state.stamina <= 15;
+}
 let scene3d = null;
 let characterPreview = null;
 let previewTimer = null;
