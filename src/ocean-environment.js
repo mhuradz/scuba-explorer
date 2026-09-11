@@ -17,8 +17,8 @@ export function rebuildOcean(game) {
   const profiles = {
     'open-ocean': { background: 0x062f3b, fog: 0x14616b, fogDensity: .024, exposure: 1.08, rockCount: 36, coralCount: 34, grassCount: 170, sand: [150, 143, 119], coral: [0x977b61, 0x9f786b, 0x657d75, 0x8b6b79, 0xa17a5f], grass: [0x365d48, 0x466b49, 0x5d7951], waterDeep: 'vec3(.006,.045,.07)', waterMid: 'vec3(.025,.2,.25)' },
     'coral-reef': { background: 0x0b4b52, fog: 0x28756f, fogDensity: .027, exposure: 1.16, rockCount: 30, coralCount: 58, grassCount: 235, sand: [118, 137, 111], coral: [0xd17469, 0xe29a63, 0x5fb7a4, 0xb978a9, 0xd8c16d], grass: [0x2d6e52, 0x3f8c65, 0x6c9e5b], waterDeep: 'vec3(.006,.06,.075)', waterMid: 'vec3(.035,.28,.27)' },
-    'sunken-wreck': { background: 0x042129, fog: 0x0e444b, fogDensity: .038, exposure: .76, rockCount: 44, coralCount: 18, grassCount: 112, sand: [105, 100, 83], coral: [0x6a5543, 0x6f554b, 0x485750, 0x61505a, 0x715640], grass: [0x264132, 0x324b33, 0x415438], waterDeep: 'vec3(.004,.032,.049)', waterMid: 'vec3(.018,.14,.175)', deepSea: true },
-    'kelp-forest': { background: 0x042129, fog: 0x0e444b, fogDensity: .038, exposure: .76, rockCount: 52, coralCount: 12, grassCount: 340, sand: [105, 100, 83], coral: [0x6a5543, 0x6f554b, 0x485750, 0x61505a, 0x715640], grass: [0x264132, 0x324b33, 0x415438], waterDeep: 'vec3(.004,.032,.049)', waterMid: 'vec3(.018,.14,.175)', deepSea: true },
+    'sunken-wreck': { background: 0x073744, fog: 0x145b64, fogDensity: .028, exposure: 1.02, rockCount: 44, coralCount: 18, grassCount: 112, sand: [125, 118, 96], coral: [0x80634e, 0x856757, 0x5e746d, 0x75626d, 0x886b50], grass: [0x31533f, 0x3d6546, 0x526e4c], waterDeep: 'vec3(.007,.055,.078)', waterMid: 'vec3(.028,.19,.22)', deepSea: true },
+    'kelp-forest': { background: 0x073442, fog: 0x145764, fogDensity: .03, exposure: .98, rockCount: 52, coralCount: 12, grassCount: 340, sand: [118, 113, 92], coral: [0x75604f, 0x796257, 0x55706a, 0x6d5f6d, 0x7c684f], grass: [0x2c4e3d, 0x386047, 0x4b6849], waterDeep: 'vec3(.006,.05,.072)', waterMid: 'vec3(.025,.18,.21)', deepSea: true },
     'abyssal-trench': { background: 0x042129, fog: 0x0e444b, fogDensity: .038, exposure: .76, rockCount: 66, coralCount: 8, grassCount: 46, sand: [105, 100, 83], coral: [0x6a5543, 0x6f554b, 0x485750, 0x61505a, 0x715640], grass: [0x264132, 0x324b33, 0x415438], waterDeep: 'vec3(.004,.032,.049)', waterMid: 'vec3(.018,.14,.175)', deepSea: true }
   };
   const profile = profiles[game.mapTheme] || profiles['open-ocean'];
@@ -27,8 +27,9 @@ export function rebuildOcean(game) {
   scene.background.set(profile.background);
   scene.fog = new THREE.FogExp2(profile.fog, profile.fogDensity);
   game.renderer.toneMappingExposure = profile.exposure;
-  scene.children.filter(o => o.isHemisphereLight).forEach(o => { o.intensity = profile.deepSea ? 1.02 : 1.25; o.color.set(profile.deepSea ? 0x7198ad : 0xb1e6e0); o.groundColor.set(0x102635); });
-  scene.children.filter(o => o.isDirectionalLight).forEach(o => { o.intensity = profile.deepSea ? 1.18 : 2.6; o.color.set(profile.deepSea ? 0x8eabc0 : 0xffffff); o.position.set(-15, 25, 8); o.shadow.mapSize.set(2048, 2048); Object.assign(o.shadow.camera, { left: -30, right: 30, top: 18, bottom: -18 }); o.shadow.camera.updateProjectionMatrix(); o.shadow.bias = -.0005; });
+  const wreckLight = game.mapId === 3 || game.mapId === 4;
+  scene.children.filter(o => o.isHemisphereLight).forEach(o => { o.intensity = profile.deepSea ? (wreckLight ? 1.3 : 1.02) : 1.25; o.color.set(profile.deepSea ? 0x7198ad : 0xb1e6e0); o.groundColor.set(0x102635); });
+  scene.children.filter(o => o.isDirectionalLight).forEach(o => { o.intensity = profile.deepSea ? (wreckLight ? 1.55 : 1.18) : 2.6; o.color.set(profile.deepSea ? 0x8eabc0 : 0xffffff); o.position.set(-15, 25, 8); o.shadow.mapSize.set(2048, 2048); Object.assign(o.shadow.camera, { left: -30, right: 30, top: 18, bottom: -18 }); o.shadow.camera.updateProjectionMatrix(); o.shadow.bias = -.0005; });
 
   // Fine grain and ripples are generated once and shared by sand and rock.
   const canvas = document.createElement('canvas'); canvas.width = canvas.height = 256;
@@ -54,7 +55,9 @@ export function rebuildOcean(game) {
   for (let i = 0; i < positions.count; i++) positions.setY(i, heightAt(positions.getX(i), positions.getZ(i)));
   ground.computeVertexNormals();
   const environmentTime = { value: 0 };
-  const ceiling = createOceanLight(scene, game.mapId === 3);
+  // The wreck is still within normal sunlight; reserve the dark ceiling for
+  // the deeper kelp and abyss maps.
+  const ceiling = createOceanLight(scene, game.mapId >= 5);
   const bedMaterial = new THREE.MeshStandardMaterial({ map: sand, normalMap: texture('sand_01', 'nor_gl', 36, 20), normalScale: new THREE.Vector2(.65,.65), roughnessMap: texture('sand_01', 'rough',36,20), roughness: .94, color: 0xb9e1df });
   bedMaterial.onBeforeCompile = shader => {
     shader.uniforms.uEnvironmentTime = environmentTime;

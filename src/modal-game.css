@@ -26,6 +26,11 @@
 .minimal-dive .dive-goal-hud>small{display:block;color:#b8f36b;font:9px 'DM Mono';letter-spacing:.04em}
 .minimal-dive #depth-hud{border:1px solid #56a8b4;border-left:3px solid #8de2df;border-radius:2px;background:#062733dd;box-shadow:0 5px 18px #0008;backdrop-filter:blur(5px)}
 .minimal-dive #depth-hud[data-danger="critical"]{border-color:#ff6570;border-left-color:#ff3d52;animation:hudCriticalPulse 1s infinite}
+.minimal-dive .speed-readout{position:absolute;z-index:6;left:18px;top:250px;width:250px;padding:8px 11px;border-left:3px solid #8de2df;background:#062733dd;box-shadow:0 5px 18px #0008;color:#efffff;pointer-events:none;display:grid;gap:3px;backdrop-filter:blur(5px)}
+.minimal-dive .speed-readout span{color:#70c9c2;font:9px 'DM Mono';letter-spacing:.1em}
+.minimal-dive .speed-readout strong{font:700 18px 'DM Mono';letter-spacing:.04em}
+.minimal-dive .speed-track{height:6px;overflow:hidden;background:#0b3946;border:1px solid #4d8d92}.minimal-dive .speed-track i{display:block;width:0;height:100%;background:linear-gradient(90deg,#73d7d0,#b8f36b);transition:width .12s linear}
+@media(max-width:760px){.minimal-dive .speed-readout{left:12px;top:222px;width:190px;padding:7px 9px}.minimal-dive .speed-readout strong{font-size:15px}}
 @keyframes hudCriticalPulse{50%{box-shadow:0 0 20px #ff304866,0 5px 18px #0008}}
 .character-open{margin:-6px 0 14px;padding:9px 12px;color:#b8f36b;background:#0d3b42;border:1px solid #529d91;border-radius:2px;font:10px 'DM Mono';letter-spacing:.08em}.character-open:hover{background:#b8f36b;color:#06232a}
 .character-backdrop{background:#03141ddd;backdrop-filter:none;padding:0}
