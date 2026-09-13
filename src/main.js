@@ -18,9 +18,9 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 const STORAGE_KEY = 'scuba-explorer-save';
 const DEFAULT_SAVE = {
-  saveVersion: 1,
-  spendablePoints: 0,
-  lifetimePoints: 0,
+  saveVersion: 3,
+  spendablePoints: 10000,
+  lifetimePoints: 10000,
   ownedEquipment: ['starter_tank', 'starter_fins'],
   equipped: { tank: 'starter_tank', fins: 'starter_fins', light: null, scooter: null },
   completedMaps: [],
@@ -83,6 +83,7 @@ function loadSave() {
     const save = cloneDefault();
     if ('points' in raw) { save.spendablePoints = Number(raw.points) || 0; save.lifetimePoints = Number(raw.lifetime) || 0; save.equipped.tank = raw.tank || 'starter_tank'; save.equipped.suit = raw.suit || 'starter_suit'; save.completedMaps = Array.isArray(raw.completed) ? raw.completed : []; }
     else Object.assign(save, raw, { equipped: { ...save.equipped, ...(raw.equipped || {}) }, settings: { ...save.settings, ...(raw.settings || {}) } });
+    if ((Number(raw.saveVersion) || 0) < 3) { save.spendablePoints = 10000; save.lifetimePoints = Math.max(save.lifetimePoints, 10000); save.saveVersion = 3; }
     save.spendablePoints = Math.max(0, Number(save.spendablePoints) || 0);
     save.lifetimePoints = Math.max(0, Number(save.lifetimePoints) || 0);
     save.ownedEquipment = Array.from(new Set(Array.isArray(save.ownedEquipment) ? save.ownedEquipment.filter(id => equipment[id]) : cloneDefault().ownedEquipment));
